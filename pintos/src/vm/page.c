@@ -73,7 +73,7 @@ void do_munmap(struct mmap_file* mmfile, struct list_elem* e) {
 	struct vm_entry* vme;
 	while(!list_empty(&mmfile->vme_list)) {
 		vme = list_entry(list_pop_front(&mmfile->vme_list), struct vm_entry, mmap_elem);
-		if((vme->is_loaded &&pagedir_is_dirty(thread_current()->pagedir, vme->vaddr)) && (vme->read_bytes!=(size_t)file_write_at(vme->file, vme->vaddr, vme->read_bytes, vme->offset)))
+		if((vme->is_loaded && pagedir_is_dirty(thread_current()->pagedir, vme->vaddr)) && (vme->read_bytes!=(size_t)file_write_at(vme->file, vme->vaddr, vme->read_bytes, vme->offset)))
 			exit(-1);
 		vme->is_loaded = false;
 		delete_vme(&thread_current()->vm, vme);
