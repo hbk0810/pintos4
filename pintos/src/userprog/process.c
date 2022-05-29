@@ -441,8 +441,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
   ASSERT (pg_ofs (upage) == 0);
   ASSERT (ofs % PGSIZE == 0);
 
-  struct vm_entry *vme;
-  struct file * vme_file = file_reopen(file);
+  struct vm_entry* vme;
+  struct file* vme_file = file_reopen(file);
   thread_current()->binary_file = vme_file;
   while (read_bytes > 0 || zero_bytes > 0) 
   {
@@ -482,13 +482,13 @@ setup_stack (void **esp)
 	struct page* page = alloc_page(PAL_USER | PAL_ZERO);
 	bool success = false;
 	if (page != NULL) {
-		success = install_page(((uint8_t *)PHYS_BASE)-PGSIZE, page->kaddr, true);
+		success = install_page(((uint8_t*)PHYS_BASE)-PGSIZE, page->kaddr, true);
 		if (success) {
 			*esp = PHYS_BASE;
 			struct vm_entry* vme = (struct vm_entry*)malloc(sizeof(struct vm_entry));
 			page->vme = vme;
 			vme->type = VM_ANON;
-			vme->vaddr = ((uint8_t *)PHYS_BASE) - PGSIZE;
+			vme->vaddr = ((uint8_t*)PHYS_BASE) - PGSIZE;
 			vme->writable = true;
 			vme->pinned = false;
 			vme->is_loaded = true;
@@ -595,12 +595,12 @@ void construct_esp(char *file_name, void **esp) {
 }
 
 bool expand_stack(void* addr) {
-	struct page *kpage = alloc_page(PAL_USER | PAL_ZERO);
-	struct vm_entry *vme = (struct vm_entry *)malloc(sizeof(struct vm_entry));
+	struct page* kpage = alloc_page(PAL_USER | PAL_ZERO);
+	struct vm_entry* vme = (struct vm_entry*)malloc(sizeof(struct vm_entry));
 	if (vme == NULL)
 		return false;
 	vme->type = VM_ANON;
-	vme->vaddr=pg_round_down(addr);
+	vme->vaddr = pg_round_down(addr);
 	vme->writable = true;
 	vme->pinned = false;
 	vme->is_loaded = true;
@@ -611,7 +611,8 @@ bool expand_stack(void* addr) {
 	insert_vme(&thread_current()->vm, vme);
 	kpage->vme = vme;
 	if(!install_page(vme->vaddr, kpage->kaddr, vme->writable)) {
-		free_page(kpage->kaddr);													free(vme);
+		free_page(kpage->kaddr);
+		free(vme);
 		return false;
 	}
 	return true;
@@ -619,7 +620,7 @@ bool expand_stack(void* addr) {
 
 bool verify_stack(void* sp, void* esp) {
 	void* max_stack = PHYS_BASE-8*1024*1024;
-	if(!is_user_vaddr(pg_round_down(sp)) || sp < max_stack || sp<esp-32)
+	if(!is_user_vaddr(pg_round_down(sp)) || sp<max_stack || sp<esp-32)
 		return false;
 	return true;
 }
