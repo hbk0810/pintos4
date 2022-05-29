@@ -451,7 +451,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		 and zero the final PAGE_ZERO_BYTES bytes. */
 	  size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 	  size_t page_zero_bytes = PGSIZE - page_read_bytes;
-	  vme = (struct vm_entry *)malloc(sizeof(struct vm_entry));
+	  vme = (struct vm_entry*)malloc(sizeof(struct vm_entry));
 	  vme->type = VM_BIN;
 	  vme->vaddr = upage;
 	  vme->writable = writable;
@@ -463,6 +463,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	  vme->zero_bytes = page_zero_bytes;
 	  insert_vme(&thread_current()->vm, vme);
 	  ofs += page_read_bytes;
+	  
 	  /* Advance. */
 	  read_bytes -= page_read_bytes;
 	  zero_bytes -= page_zero_bytes;
@@ -476,20 +477,18 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 static bool
 setup_stack (void **esp) 
 {
-	struct page* page;
 	uint8_t *kpage;
+	
+	struct page* page = alloc_page(PAL_USER | PAL_ZERO);
 	bool success = false;
-
-	page = alloc_page (PAL_USER | PAL_ZERO);
-
 	if (page != NULL) {
-		success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, page->kaddr, true);
+		success = install_page(((uint8_t *)PHYS_BASE)-PGSIZE, page->kaddr, true);
 		if (success) {
 			*esp = PHYS_BASE;
-			struct vm_entry *vme = (struct vm_entry *)malloc(sizeof(struct vm_entry));
+			struct vm_entry* vme = (struct vm_entry*)malloc(sizeof(struct vm_entry));
 			page->vme = vme;
 			vme->type = VM_ANON;
-			vme->vaddr = ((uint8_t *) PHYS_BASE) - PGSIZE;
+			vme->vaddr = ((uint8_t *)PHYS_BASE) - PGSIZE;
 			vme->writable = true;
 			vme->pinned = false;
 			vme->is_loaded = true;
@@ -501,35 +500,10 @@ setup_stack (void **esp)
 			return success;
 		}
 		else {
-			free_page (page->kaddr);
+			free_page(page->kaddr);
 			return success;
 		}
 	}
-  //uint8_t *kpage;
-  /*bool success = false;
-
-  struct page* page = alloc_page (PAL_USER | PAL_ZERO);
-  if (page != NULL) 
-    {
-      success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, page->kaddr, true);
-      if (success) {
-        *esp = PHYS_BASE;
-		struct vm_entry* vme = (struct vm_entry*)malloc(sizeof(struct vm_entry));
-		page->vme = vme;
-		vme->vaddr = ((uint8_t*)PHYS_BASE)-PGSIZE;
-		vme->writable = true;
-		vme->type = VM_ANON;
-		vme->is_loaded = true;
-		vme->file = NULL;
-		vme->offset = 0;
-		vme->read_bytes = 0;
-		vme->zero_bytes = 0;
-		insert_vme(&thread_current()->vm, vme);
-	  }
-      else
-        free_page (page->kaddr);
-    }
-  return success;*/
 }
 
 /* Adds a mapping from user virtual address UPAGE to kernel
