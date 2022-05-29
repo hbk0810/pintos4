@@ -21,7 +21,7 @@ void swap_in(size_t used_index, void* kaddr) {
 	if(!bitmap_test(swap_bitmap, used_index))
 		exit(-1);
 	lock_acquire(&swap_lock);
-	for (i = 0; i < BLOCK_PER_PAGE; i++) {
+	for (i = 0; i<BLOCK_PER_PAGE; i++) {
 		block_read(swap_block, BLOCK_PER_PAGE*used_index+i, BLOCK_SECTOR_SIZE*i+kaddr);
 	}
 	bitmap_reset(swap_bitmap, used_index);
